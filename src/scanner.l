@@ -1632,6 +1632,22 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*"constants"{BN}+       {
+                                          isTypedef=false;
+
+                                          current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::ConstantGroup;
+                                          addType( current ) ;
+                                          current->type = "constant group";
+                                          current->fileName  = yyFileName;
+                                          current->startLine = yyLineNr;
+                                          current->bodyLine  = yyLineNr;
+
+                                          lineCount() ;
+                                          if (yytext[yyleng-1]=='{') unput('{');
+
+                                          BEGIN( CompoundName ) ;
+                                        }
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?"{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
                                           QCString text=yytext;
@@ -5966,7 +5982,7 @@ static void parseCompounds(Entry *rt)
 	{
           current->protection = protection = (ce->spec & (Entry::Interface|Entry::Enum)) ?  Public : Package;
 	}
-	else if (ce->spec&(Entry::Interface | Entry::Ref | Entry::Value | Entry::Struct | Entry::Union))
+	else if (ce->spec&(Entry::Interface | Entry::Ref | Entry::Value | Entry::Struct | Entry::Union | Entry::ConstantGroup))
 	{
 	  if (ce->lang==SrcLangExt_ObjC)
 	  {

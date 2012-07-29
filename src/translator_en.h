@@ -621,6 +621,7 @@ class TranslatorEnglish : public Translator
         case ClassDef::Protocol:   result+=" Protocol"; break;
         case ClassDef::Category:   result+=" Category"; break;
         case ClassDef::Exception:  result+=" Exception"; break;
+        case ClassDef::ConstantGroup: result+=" Constant Group"; break;
       }
       if (isTemplate) result+=" Template";
       result+=" Reference";
@@ -779,6 +780,7 @@ class TranslatorEnglish : public Translator
         case ClassDef::Protocol:   result+="protocol"; break;
         case ClassDef::Category:   result+="category"; break;
         case ClassDef::Exception:  result+="exception"; break;
+        case ClassDef::ConstantGroup: result+="constant group"; break;
       }
       result+=" was generated from the following file";
       if (single) result+=":"; else result+="s:";

@@ -1093,6 +1093,8 @@ static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
     sec=ClassDef::Protocol;
   else if (specifier&Entry::Exception) 
     sec=ClassDef::Exception;
+  else if (specifier&Entry::ConstantGroup)
+    sec=ClassDef::ConstantGroup;
 
   switch(section)
   {

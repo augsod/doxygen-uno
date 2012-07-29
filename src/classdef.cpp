@@ -3169,6 +3169,7 @@ QCString ClassDef::compoundTypeString() const
       case Protocol:  return "protocol";
       case Category:  return "category";
       case Exception: return "exception";
+      case ConstantGroup: return "constant group";
       default:        return "unknown";
     }
   }
@@ -3677,7 +3678,7 @@ void ClassDef::addMemberToList(MemberList::ListType lt,MemberDef *md,bool isBrie
   static bool sortBriefDocs = Config_getBool("SORT_BRIEF_DOCS");
   static bool sortMemberDocs = Config_getBool("SORT_MEMBER_DOCS");
   MemberList *ml = createMemberList(lt);
-  ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
+  ml->setNeedsSorting((isBrief && sortBriefDocs && compoundType() != ConstantGroup) || (!isBrief && sortMemberDocs && compoundType() != ConstantGroup));
   ml->append(md);
 
   // for members in the declaration lists we set the section, needed for member grouping
