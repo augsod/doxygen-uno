@@ -1649,13 +1649,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 <FindMembers>{B}*"service"{BN}+         {
                                           isTypedef=false;
 
-                                          current = new Entry;
-                                          initEntry();
-
                                           current->section = Entry::CLASS_SEC;
                                           current->spec = Entry::Service;
                                           addType( current ) ;
-                                          current->type = "service";
+                                          current->type += " service";
                                           current->protection = protection = Public;
                                           current->fileName  = yyFileName;
                                           current->startLine = yyLineNr;

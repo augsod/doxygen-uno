@@ -2136,7 +2136,7 @@ static MemberDef *addVariableToClass(
   {
     if ((root->type.findRev("interface")!=-1 ||
          root->type.findRev("service")!=-1) &&
-        rootNav->parent() && rootNav->parent()->type()=="service")
+        rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
     {
       // For interfaces in UNO IDL-style services
       def=root->type+" "+name;
@@ -2734,7 +2734,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
          }
       }
       else if ((root->type.findRev("interface")!=-1 || root->type.findRev("service")!=-1) &&
-               rootNav->parent() && rootNav->parent()->type()=="service")
+               rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
       {
         // For interfaces in UNO IDL-style services
         cd=getClass(scope);
@@ -2910,7 +2910,7 @@ static void buildVarList(EntryNav *rootNav)
     addVariable(rootNav,isFuncPtr);
   }
   else if ((rootNav->type().findRev("interface")!=-1 || rootNav->type().findRev("service")!=-1) &&
-           rootNav->parent() && rootNav->parent()->type() == "service")
+           rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
   {
     // For interfaces in UNO IDL-style services
     addVariable(rootNav,isFuncPtr);
@@ -6574,7 +6574,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
   }
 
   if ((root->type.findRev("interface")!=-1 || root->type.findRev("service")!=-1) &&
-      rootNav->parent() && rootNav->parent()->type()=="service")
+      rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
   {
     // For UNO IDL-style interfaces
     findMember(rootNav,
