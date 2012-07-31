@@ -1656,6 +1656,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           current->spec = Entry::Service;
                                           addType( current ) ;
                                           current->type = "service";
+                                          current->protection = protection = Public;
                                           current->fileName  = yyFileName;
                                           current->startLine = yyLineNr;
                                           current->bodyLine  = yyLineNr;
@@ -2169,7 +2170,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           {
                                             current->type="[optional]";
                                           }
-                                          else if (insideIDL && QCString(yytext).find("interface")==0)
+                                          else if (insideIDL && (QCString(yytext).find("interface")==0 ||
+                                                                 QCString(yytext).find("service")==0))
                                           {
 					    lineCount();
   					    isTypedef=FALSE;
@@ -2188,7 +2190,14 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
                                             addType( current ) ;
 
-					    current->type += " interface" ;
+                                            if(QCString(yytext).find("interface")==0)
+                                            {
+					      current->type += " interface" ;
+                                            }
+                                            else if(QCString(yytext).find("service")==0)
+                                            {
+                                              current->type += " service";
+                                            }
 
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
