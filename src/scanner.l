@@ -1397,13 +1397,27 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           if (insideIDL || insideJava || insideCS || insideD || insidePHP)
 					  {
   					    isTypedef=FALSE;
-					    current->section = Entry::CLASS_SEC;
-                                            current->spec = Entry::Interface;
-					    addType( current ) ;
+
+                                            if(current_root && current_root->spec & Entry::Service)
+                                            {
+                                              current->section = Entry::VARIABLE_SEC;
+                                              current->spec = Entry::Value;
+                                              current->protection = protection = Public;
+                                            }
+                                            else
+                                            {
+                                              current->section = Entry::CLASS_SEC;
+                                              current->spec = Entry::Interface;
+                                            }
+
+                                            addType( current ) ;
+
 					    current->type += " interface" ;
+
 					    current->fileName  = yyFileName;
 					    current->startLine = yyLineNr;
 					    current->bodyLine  = yyLineNr;
+
 					    BEGIN( CompoundName );
 					  }
 					  else
@@ -1632,6 +1646,24 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  if (yytext[yyleng-1]=='{') unput('{');
 					  BEGIN( CompoundName ) ;
 					}
+<FindMembers>{B}*"service"{BN}+         {
+                                          isTypedef=false;
+
+                                          current = new Entry;
+                                          initEntry();
+
+                                          current->section = Entry::CLASS_SEC;
+                                          current->spec = Entry::Service;
+                                          addType( current ) ;
+                                          current->type = "service";
+                                          current->fileName  = yyFileName;
+                                          current->startLine = yyLineNr;
+                                          current->bodyLine  = yyLineNr;
+
+                                          lineCount();
+
+                                          BEGIN( CompoundName );
+                                        }
 <FindMembers>{B}*"constants"{BN}+       {
                                           isTypedef=false;
 
@@ -2083,6 +2115,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  BEGIN(QtPropAttr);
   					}
 <FindMembers>"friend"{BN}+("class"|"union"|"struct"){BN}+ {
+
   					  current->name=yytext;
 				          BEGIN(FindMembers);
 			 	        }
@@ -2132,6 +2165,45 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    current->name="this";
 					    BEGIN(CSIndexer);
 					  }
+                                          else if (insideIDL && strcmp(yytext,"optional")==0)
+                                          {
+                                            current->type="[optional]";
+                                          }
+                                          else if (insideIDL && QCString(yytext).find("interface")==0)
+                                          {
+					    lineCount();
+  					    isTypedef=FALSE;
+
+                                            if(current_root && current_root->spec & Entry::Service)
+                                            {
+                                              current->section = Entry::VARIABLE_SEC;
+                                              current->spec = Entry::Value;
+                                              current->protection = protection = Public;
+                                            }
+                                            else
+                                            {
+                                              current->section = Entry::CLASS_SEC;
+                                              current->spec = Entry::Interface;
+                                            }
+
+                                            addType( current ) ;
+
+					    current->type += " interface" ;
+
+					    current->fileName  = yyFileName;
+					    current->startLine = yyLineNr;
+					    current->bodyLine  = yyLineNr;
+
+                                            QCString name = yytext;
+                                            name = name.mid(10).stripWhiteSpace();
+                                            if(name.find("::")==0)
+                                            {
+                                              name = name.mid(2);
+                                            }
+
+                                            yyless(yyleng - name.length());
+					    BEGIN( CompoundName );
+                                          }
 					  else
 					  {
 					    if (YY_START==FindMembers)
@@ -3007,13 +3079,18 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					}
 
-<FindMembers>"["			{ 
+<FindMembers>"["			{
   					  if (!insideCS &&  
 					      (current->name.isEmpty() || 
 					       current->name=="typedef"
 					      )
 					     ) // IDL function property
  					  {
+                                            if(current_root && current_root->spec & Entry::Service)
+                                            {
+                                              REJECT;
+                                            }
+
           				    squareCount=1;
 					    lastSquareContext = YY_START;
 					    idlAttr.resize(0);
@@ -4753,6 +4830,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      unput('{'); // fake start of body
 					      BEGIN( ClassVar );
 					    }
+
 					    else
 					    {
 					      BEGIN( lastClassTemplSpecContext );
@@ -4767,14 +4845,25 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
   					  current->name += yytext;
 					}
 <CompoundName>{SCOPENAME}{BN}*";"	{ // forward declaration
-    					  unput(';');
-					  current->reset();
-					  initEntry();
-					  if (isTypedef) // typedef of a class, put typedef keyword back
-					  {
-					    current->type.prepend("typedef");
-					  }
-					  BEGIN( FindMembers );
+                                          current->name = yytext;
+
+                                          unput(';');
+
+                                          int ix = current->name.find(';');
+                                          if(ix > 0)
+                                            current->name = current->name.left(ix);
+
+                                          if(!(current_root && current_root->spec & Entry::Service))
+                                          {
+					    current->reset();
+					    initEntry();
+					    if (isTypedef) // typedef of a class, put typedef keyword back
+					    {
+					      current->type.prepend("typedef");
+					    }
+                                          }
+
+                                          BEGIN( FindMembers );
 					}
 <CompoundName>{SCOPENAME}/{BN}*"("	{ 
 					  current->name = yytext ;

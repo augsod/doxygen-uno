@@ -59,6 +59,7 @@ class ClassDef : public Definition
     /** The various compound types */
     enum CompoundType { Class, //=Entry::CLASS_SEC, 
                         ConstantGroup, //=Entry::CONSTANT_GROUP_SEC,
+                        Service, //=Entry::SERVICE_SEC,
                         Struct, //=Entry::STRUCT_SEC, 
                         Union, //=Entry::UNION_SEC,
                         Interface, //=Entry::INTERFACE_SEC,

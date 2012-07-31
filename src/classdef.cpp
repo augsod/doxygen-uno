@@ -3170,6 +3170,7 @@ QCString ClassDef::compoundTypeString() const
       case Category:  return "category";
       case Exception: return "exception";
       case ConstantGroup: return "constant group";
+      case Service:   return "service";
       default:        return "unknown";
     }
   }

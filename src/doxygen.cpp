@@ -1095,6 +1095,8 @@ static ClassDef::CompoundType convertToCompoundType(int section,int specifier)
     sec=ClassDef::Exception;
   else if (specifier&Entry::ConstantGroup)
     sec=ClassDef::ConstantGroup;
+  else if (specifier&Entry::Service)
+    sec=ClassDef::Service;
 
   switch(section)
   {
@@ -2132,7 +2134,13 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!root->type.isEmpty())
   {
-    if (related || mtype==MemberDef::Friend || Config_getBool("HIDE_SCOPE_NAMES"))
+    if (root->type.findRev("interface")!=-1 && rootNav->parent() &&
+        rootNav->parent()->type()=="service")
+    {
+      // For interfaces in UNO IDL-style services
+      def=root->type+" "+name;
+    }
+    else if (related || mtype==MemberDef::Friend || Config_getBool("HIDE_SCOPE_NAMES"))
     {
       def=root->type+" "+name+root->args;
     }
@@ -2724,6 +2732,24 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
                              );
          }
       }
+      else if (root->type.findRev("interface")!=-1 && rootNav->parent() &&
+               rootNav->parent()->type()=="service")
+      {
+        // For interfaces in UNO IDL-style services
+        cd=getClass(scope);
+        if (cd)
+        {
+          addVariableToClass(rootNav,
+                             cd,
+                             MemberDef::Variable,
+                             name,
+                             FALSE,
+                             0,
+                             Public,
+                             Member);
+        }
+      }
+
       goto nextMember;
                /* skip this member, because it is a 
                 * static variable definition (always?), which will be
@@ -2753,6 +2779,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
       if (getClass(root->relates)==0 && !scope.isEmpty())
         scope=mergeScopes(scope,root->relates);
       else 
+
         scope=root->relates;
     }
     
@@ -2772,6 +2799,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
       //bool added=FALSE;
       
       static bool inlineSimpleStructs = Config_getBool("INLINE_SIMPLE_STRUCTS");
+
       if (si!=-1 && !inlineSimpleStructs) // anonymous scope or type
       {
         QCString pScope;
@@ -2880,6 +2908,13 @@ static void buildVarList(EntryNav *rootNav)
   {
     addVariable(rootNav,isFuncPtr);
   }
+  else if (rootNav->parent() && rootNav->parent()->type() == "service" &&
+           rootNav->type() == "interface")
+  {
+    // For interfaces in UNO IDL-style services
+    addVariable(rootNav,isFuncPtr);
+  }
+
   if (rootNav->children())
   {
     EntryNavListIterator eli(*rootNav->children());
@@ -6535,6 +6570,16 @@ static void filterMemberDocumentation(EntryNav *rootNav)
     // detect function types marked as functions
   {
     isFunc=FALSE;
+  }
+
+  if (rootNav->parent() && rootNav->parent()->type() == "service" &&
+      root->type == "interface")
+  {
+    // For UNO IDL-style interfaces
+    findMember(rootNav,
+               root->type + " " + root->name,
+               FALSE, FALSE);
+    return;
   }
 
   //printf("Member %s isFunc=%d\n",root->name.data(),isFunc);

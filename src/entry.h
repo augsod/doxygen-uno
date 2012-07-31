@@ -159,7 +159,8 @@ class Entry
       SealedClass    = 0x0400,
       AbstractClass  = 0x0800,
       Enum           = 0x1000, // for Java-style enums
-      ConstantGroup  = 0x2000  // for UNO-style constant groups
+      ConstantGroup  = 0x2000, // for UNO-style constant groups
+      Service        = 0x4000  // for UNO-style services
     };
     enum GroupDocType
     {
