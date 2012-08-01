@@ -2166,11 +2166,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
                                           else if (insideIDL && strcmp(yytext,"optional")==0)
                                           {
-                                            current->type="[optional]";
+                                            current->type += " [optional]";
                                           }
                                           else if (insideIDL && strcmp(yytext,"published")==0)
                                           {
-                                            //Ignore 'published' in UNO IDL for now
+                                            current->type += " published";
                                           }
                                           else if (insideIDL && (QCString(yytext).find("interface")==0 ||
                                                                  QCString(yytext).find("service")==0))
@@ -4888,6 +4888,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           int ix = current->name.find(';');
                                           if(ix > 0)
                                             current->name = current->name.left(ix);
+
+                                          current->name = current->name.stripWhiteSpace();
+                                          if(current->name.find("::")==0)
+                                            current->name = current->name.mid(2);
 
                                           if(!(current_root && current_root->spec & Entry::Service))
                                           {
