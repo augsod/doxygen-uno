@@ -733,6 +733,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 %x      IDLAttribute
 %x      IDLProp
 %x      IDLPropName
+%x      IDLSingletonType
 
  /** Prototype scanner states */
 
@@ -2167,6 +2168,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           {
                                             current->type="[optional]";
                                           }
+                                          else if (insideIDL && strcmp(yytext,"published")==0)
+                                          {
+                                            //Ignore 'published' in UNO IDL for now
+                                          }
                                           else if (insideIDL && (QCString(yytext).find("interface")==0 ||
                                                                  QCString(yytext).find("service")==0))
                                           {
@@ -3009,15 +3014,40 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
   /* ---------------------- */
 
+<IDLSingletonType>{BN}*{SCOPENAME}{BN}*";" {
+                                          unput(';');
 
+                                          QCString type = yytext;
+                                          int ix = type.find(';');
+                                          if(ix > 0)
+                                            type = type.left(ix);
+
+                                          type = type.stripWhiteSpace();
+                                          if(type.find("::")==0)
+                                            type = type.mid(2);
+
+                                          current->type = "singleton " + type;
+
+                                          BEGIN( FindMembers );
+                                        }
 <FindMembers>":"			{
   					  if (current->type.isEmpty()) // anonymous padding field, e.g. "int :7;"
 					  {
 					    addType(current);
 					    current->name.sprintf("__pad%d__",padCount++);
 					  }
-  					  BEGIN(BitFields);
-					  current->bitfields+=":";
+
+                                          if (insideIDL && QCString(current->type).findRev("singleton")!=-1)
+                                          {
+                                            printf("Beginning IDLSingletonType\n");
+
+                                            BEGIN( IDLSingletonType );
+                                          }
+                                          else
+                                          {
+  					    BEGIN(BitFields);
+                                            current->bitfields+=":";
+                                          }
   					}
 <BitFields>.				{
   					  current->bitfields+=*yytext;
