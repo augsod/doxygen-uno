@@ -2201,7 +2201,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           }
                                           else if (insideIDL && strcmp(yytext,"published")==0)
                                           {
-                                            current->type += " published";
+                                            // current->type += " published";
+                                            // Ignore this for now, we'll do our own preprocessing
+                                          }
+                                          else if (insideIDL && strcmp(yytext,"typedef")==0)
+                                          {
+                                            isTypedef = true;
                                           }
                                           else if (insideIDL && (QCString(yytext).find("interface")==0 ||
                                                                  QCString(yytext).find("service")==0))
