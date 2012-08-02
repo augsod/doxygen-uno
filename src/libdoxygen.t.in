@@ -46,7 +46,7 @@ sub GenerateDep {
 ####################
 
 #$ GenerateDep("scanner.cpp","scanner.l");
-	$(LEX) -d -PscanYY -t scanner.l | $(INCBUFSIZE) >scanner.cpp
+	$(LEX) -PscanYY -t scanner.l | $(INCBUFSIZE) >scanner.cpp
 
 #$ GenerateDep("code.cpp","code.l");
 	$(LEX) -PcodeYY -t code.l | $(INCBUFSIZE) >code.cpp
