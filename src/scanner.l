@@ -2246,6 +2246,11 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						current->name += yytext;
 			 		      current->stat = TRUE;
 					    }
+                                            else if (insideIDL && current_root && current_root->spec & Entry::Service)
+                                            {
+                                              current->name = yytext;
+                                              current->protection = protection = Public;
+                                            }
 					    else
 					    {
 					      if (YY_START==FindMembers)
