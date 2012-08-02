@@ -582,6 +582,17 @@ static int yyread(char *buf,int max_size)
     return c;
 }
 
+static QCString readIDLProp(QCString prop, QCString type)
+{
+  int lb = type.findRev(']');
+  if(lb > 0)
+    type = type.replace(lb, 1, ", " + prop + "]");
+  else
+    type += " [" + prop + "]";
+
+  return type;
+}
+
 %}
 
        /* start command character */
@@ -2166,7 +2177,23 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
                                           else if (insideIDL && strcmp(yytext,"optional")==0)
                                           {
-                                            current->type += " [optional]";
+                                            current->type = readIDLProp("optional", current->type);
+                                          }
+                                          else if (insideIDL && strcmp(yytext,"property")==0)
+                                          {
+                                            current->type = readIDLProp("property", current->type);
+                                          }
+                                          else if (insideIDL && strcmp(yytext,"oneway")==0)
+                                          {
+                                            current->type = readIDLProp("oneway", current->type);
+                                          }
+                                          else if (insideIDL && strcmp(yytext,"readonly")==0)
+                                          {
+                                            current->type = readIDLProp("readonly", current->type);
+                                          }
+                                          else if (insideIDL && strcmp(yytext,"attribute")==0)
+                                          {
+                                            current->type = readIDLProp("attribute", current->type);
                                           }
                                           else if (insideIDL && strcmp(yytext,"published")==0)
                                           {
@@ -3181,6 +3208,21 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
 					  current->spec |= Entry::Gettable;
 					}
+<IDLAttribute>"oneway"                  {
+                                          current->type = readIDLProp("oneway", current->type);
+                                        }
+<IDLAttribute>"readonly"                {
+                                          current->type = readIDLProp("readonly", current->type);
+                                        }
+<IDLAttribute>"attribute"               {
+                                          current->type = readIDLProp("attribute", current->type);
+                                        }
+<IDLAttribute>"optional"                {
+                                          current->type = readIDLProp("optional", current->type);
+                                        }
+<IDLAttribute>"property"                {
+                                          current->type = readIDLProp("property", current->type);
+                                        }
 <IDLAttribute>.				{
 					}
 <IDLPropName>{BN}*{ID}{BN}*		{
