@@ -2195,6 +2195,10 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           {
                                             current->type = readIDLProp("attribute", current->type);
                                           }
+                                          else if (insideIDL && strcmp(yytext,"maybevoid")==0)
+                                          {
+                                            current->type = readIDLProp("maybevoid", current->type);
+                                          }
                                           else if (insideIDL && strcmp(yytext,"published")==0)
                                           {
                                             current->type += " published";
@@ -3222,6 +3226,9 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                         }
 <IDLAttribute>"property"                {
                                           current->type = readIDLProp("property", current->type);
+                                        }
+<IDLAttribute>"maybevoid"               {
+                                          current->type = readIDLProp("maybevoid", current->type);
                                         }
 <IDLAttribute>.				{
 					}
