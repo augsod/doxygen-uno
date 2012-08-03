@@ -1402,7 +1402,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             if(current_root && current_root->spec & Entry::Service)
                                             {
                                               current->section = Entry::VARIABLE_SEC;
-                                              current->spec = Entry::Ref;
+                                              current->protection = protection = Public;
                                             }
                                             else
                                             {
@@ -2229,7 +2229,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             if(current_root && current_root->spec & Entry::Service)
                                             {
                                               current->section = Entry::VARIABLE_SEC;
-                                              current->spec = Entry::Value;
                                               current->protection = protection = Public;
                                             }
                                             else
