@@ -88,7 +88,8 @@ class MemberDef : public Definition
     const char *extraTypeChars() const;
     const QCString &initializer() const;
     int initializerLines() const;
-    int  getMemberSpecifiers() const;
+    int getMemberSpecifiers() const;
+    int getPropertySpecifiers() const;
     MemberList *getSectionList(Definition *d) const;
 
     // scope query members
@@ -140,6 +141,7 @@ class MemberDef : public Definition
     bool isReadable() const;
     bool isWritable() const;
     bool isAddable() const;
+
     bool isRemovable() const;
     bool isRaisable() const;
     bool isFinal() const;
@@ -169,6 +171,11 @@ class MemberDef : public Definition
     bool hasOneLineInitializer() const;
     bool hasMultiLineInitializer() const;
     bool protectionVisible() const;
+    bool isAttribute() const;
+    bool isReadonly() const;
+    bool isMaybevoid() const;
+    bool isOneway() const;
+    bool isUNOProperty() const;
 
     // output info
     bool isLinkableInProject() const;
@@ -249,6 +256,8 @@ class MemberDef : public Definition
     void setAnchor(const char *a);
     void setProtection(Protection p);
     void setMemberSpecifiers(int s);
+    void setPropertySpecifiers(int s);
+    void mergePropertySpecifiers(int s);
     void mergeMemberSpecifiers(int s);
     void setInitializer(const char *i);
     void setBitfields(const char *s);

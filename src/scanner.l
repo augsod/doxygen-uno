@@ -582,17 +582,6 @@ static int yyread(char *buf,int max_size)
     return c;
 }
 
-static QCString readIDLProp(QCString prop, QCString type)
-{
-  int lb = type.findRev(']');
-  if(lb > 0)
-    type = type.replace(lb, 1, ", " + prop + "]");
-  else
-    type += " [" + prop + "]";
-
-  return type;
-}
-
 %}
 
        /* start command character */
@@ -1413,8 +1402,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             if(current_root && current_root->spec & Entry::Service)
                                             {
                                               current->section = Entry::VARIABLE_SEC;
-                                              current->spec = Entry::Value;
-                                              current->protection = protection = Public;
+                                              current->spec = Entry::Ref;
                                             }
                                             else
                                             {
@@ -2177,27 +2165,51 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  }
                                           else if (insideIDL && strcmp(yytext,"optional")==0)
                                           {
-                                            current->type = readIDLProp("optional", current->type);
+                                            if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					    {
+					      current->mtype = Property;
+					    }
+                                            current->spec |= Entry::Optional;
                                           }
                                           else if (insideIDL && strcmp(yytext,"property")==0)
                                           {
-                                            current->type = readIDLProp("property", current->type);
+                                            if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					    {
+					      current->mtype = Property;
+					    }
+                                            current->propSpec |= Entry::UNOProperty;
                                           }
                                           else if (insideIDL && strcmp(yytext,"oneway")==0)
                                           {
-                                            current->type = readIDLProp("oneway", current->type);
+                                            if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					    {
+					      current->mtype = Property;
+					    }
+                                            current->propSpec |= Entry::Oneway;
                                           }
                                           else if (insideIDL && strcmp(yytext,"readonly")==0)
                                           {
-                                            current->type = readIDLProp("readonly", current->type);
+                                            if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					    {
+					      current->mtype = Property;
+					    }
+                                            current->propSpec |= Entry::Readonly;
                                           }
                                           else if (insideIDL && strcmp(yytext,"attribute")==0)
                                           {
-                                            current->type = readIDLProp("attribute", current->type);
+                                            if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					    {
+					      current->mtype = Property;
+					    }
+                                            current->propSpec |= Entry::Attribute;
                                           }
                                           else if (insideIDL && strcmp(yytext,"maybevoid")==0)
                                           {
-                                            current->type = readIDLProp("maybevoid", current->type);
+                                            if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					    {
+					      current->mtype = Property;
+					    }
+                                            current->propSpec |= Entry::Maybevoid;
                                           }
                                           else if (insideIDL && strcmp(yytext,"published")==0)
                                           {
@@ -2285,7 +2297,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                             else if (insideIDL && current_root && current_root->spec & Entry::Service)
                                             {
                                               current->name = yytext;
-                                              current->protection = protection = Public;
                                             }
 					    else
 					    {
@@ -3218,22 +3229,46 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->spec |= Entry::Gettable;
 					}
 <IDLAttribute>"oneway"                  {
-                                          current->type = readIDLProp("oneway", current->type);
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
+                                          current->propSpec |= Entry::Oneway;
                                         }
 <IDLAttribute>"readonly"                {
-                                          current->type = readIDLProp("readonly", current->type);
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
+                                          current->propSpec |= Entry::Readonly;
                                         }
 <IDLAttribute>"attribute"               {
-                                          current->type = readIDLProp("attribute", current->type);
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
+                                          current->propSpec |= Entry::Attribute;
                                         }
 <IDLAttribute>"optional"                {
-                                          current->type = readIDLProp("optional", current->type);
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
+                                          current->spec |= Entry::Optional;
                                         }
 <IDLAttribute>"property"                {
-                                          current->type = readIDLProp("property", current->type);
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
+                                          current->propSpec |= Entry::UNOProperty;
                                         }
 <IDLAttribute>"maybevoid"               {
-                                          current->type = readIDLProp("maybevoid", current->type);
+                                          if (Config_getBool("IDL_PROPERTY_SUPPORT"))
+					  {
+					    current->mtype = Property;
+					  }
+                                          current->propSpec |= Entry::Maybevoid;
                                         }
 <IDLAttribute>.				{
 					}
@@ -3276,6 +3311,7 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  current->type		= idlProp;
   					  current->args       = current->args.simplifyWhiteSpace();
   					  if (current->args)
+
   					    current->args += ")";
   					  current->name       = current->name.stripWhiteSpace();
 					  current->section    = Entry::VARIABLE_SEC;

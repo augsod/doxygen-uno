@@ -144,6 +144,14 @@ class Entry
       Aggregation = 0x04000000,
       Association = 0x08000000
     };
+    enum PropertySpecifier
+    {
+      Attribute   = 0x0001,
+      Readonly    = 0x0002,
+      Maybevoid   = 0x0004,
+      Oneway      = 0x0008,
+      UNOProperty = 0x0100
+    };
     enum ClassSpecifier
     {
       Template       = 0x0001,
@@ -222,6 +230,7 @@ class Entry
     Protection protection;    //!< class protection
     MethodTypes mtype;        //!< signal, slot, (dcop) method, or property?
     int  spec;                //!< class/member specifiers
+    int  propSpec;            //!< UNO IDL property specifiers
     int  initLines;           //!< define/variable initializer lines to show 
     bool stat;                //!< static ?
     bool explicitExternal;    //!< explicitly defined as external?

@@ -3437,6 +3437,7 @@ void ClassDef::addMembersToTemplateInstance(ClassDef *cd,const char *templSpec)
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
       imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
+      imd->setPropertySpecifiers(md->getPropertySpecifiers());
       imd->setMemberGroupId(md->getMemberGroupId());
       insertMember(imd);
       //printf("Adding member=%s %s%s to class %s templSpec %s\n",

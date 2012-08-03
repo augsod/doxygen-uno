@@ -1454,6 +1454,7 @@ static ClassDef *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QC
       imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
       imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
       imd->setMemberSpecifiers(md->getMemberSpecifiers());
+      imd->setPropertySpecifiers(md->getPropertySpecifiers());
       imd->setMemberGroupId(md->getMemberGroupId());
       imd->setInitializer(md->initializer());
       imd->setMaxInitLines(md->initializerLines());
@@ -2049,6 +2050,7 @@ static void findUsingDeclImports(EntryNav *rootNav)
                   newMd->setMaxInitLines(md->initializerLines());
                   newMd->setMemberGroupId(root->mGrpId);
                   newMd->setMemberSpecifiers(md->getMemberSpecifiers());
+                  newMd->setPropertySpecifiers(md->getPropertySpecifiers());
                   newMd->setLanguage(root->lang);
 
                   rootNav->releaseEntry();
@@ -2219,6 +2221,7 @@ static MemberDef *addVariableToClass(
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   md->setMemberSpecifiers(root->spec);
+  md->setPropertySpecifiers(root->propSpec);
   md->setReadAccessor(root->read);
   md->setWriteAccessor(root->write);
   md->enableCallGraph(root->callGraph);
@@ -2995,6 +2998,7 @@ static void addMethodToClass(EntryNav *rootNav,ClassDef *cd,
   md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
   md->setBodySegment(root->bodyLine,root->endBodyLine);
   md->setMemberSpecifiers(root->spec);
+  md->setPropertySpecifiers(root->propSpec);
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
   md->setLanguage(root->lang);
@@ -3387,6 +3391,7 @@ static void buildFunctionList(EntryNav *rootNav)
           md->setBodyDef(fd);
           md->addSectionsToDefinition(root->anchors);
           md->setMemberSpecifiers(root->spec);
+          md->setPropertySpecifiers(root->propSpec);
           md->setMemberGroupId(root->mGrpId);
 
           // see if the function is inside a namespace that was not part of
@@ -3744,7 +3749,9 @@ static void transferFunctionDocumentation()
                 //mdec->setBodyMember(mdef);
               }
               mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
+              mdec->mergePropertySpecifiers(mdef->getPropertySpecifiers());
               mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
+              mdef->mergePropertySpecifiers(mdec->getPropertySpecifiers());
 
 
               // copy group info.
@@ -5190,6 +5197,7 @@ static void addMemberDocs(EntryNav *rootNav,
   md->enableCallerGraph(md->hasCallerGraph() || root->callerGraph);
 
   md->mergeMemberSpecifiers(root->spec);
+  md->mergePropertySpecifiers(root->propSpec);
   md->addSectionsToDefinition(root->anchors);
   addMemberToGroups(root,md);
   if (cd) cd->insertUsedFile(root->fileName);
@@ -6152,6 +6160,7 @@ static void findMember(EntryNav *rootNav,
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->spec);
+          md->setPropertySpecifiers(root->propSpec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -6218,6 +6227,7 @@ static void findMember(EntryNav *rootNav,
           FileDef *fd=rootNav->fileDef();
           md->setBodyDef(fd);
           md->setMemberSpecifiers(root->spec);
+          md->setPropertySpecifiers(root->propSpec);
           md->setMemberGroupId(root->mGrpId);
           mn->append(md);
           cd->insertMember(md);
@@ -6403,6 +6413,7 @@ static void findMember(EntryNav *rootNav,
           //}
           md->setMemberClass(cd);
           md->setMemberSpecifiers(root->spec);
+          md->setPropertySpecifiers(root->propSpec);
           md->setDefinition(funcDecl);
           md->enableCallGraph(root->callGraph);
           md->enableCallerGraph(root->callerGraph);
@@ -6486,6 +6497,7 @@ localObjCMethod:
         FileDef *fd=rootNav->fileDef();
         md->setBodyDef(fd);
         md->setMemberSpecifiers(root->spec);
+        md->setPropertySpecifiers(root->propSpec);
         md->setMemberGroupId(root->mGrpId);
         cd->insertMember(md);
         cd->insertUsedFile(root->fileName);

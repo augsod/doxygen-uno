@@ -71,6 +71,7 @@ Entry::Entry(const Entry &e)
   protection  = e.protection;
   mtype       = e.mtype;
   spec        = e.spec;
+  propSpec    = e.propSpec;
   initLines   = e.initLines;
   stat        = e.stat;
   explicitExternal = e.explicitExternal;
@@ -269,6 +270,7 @@ void Entry::reset()
   proto   = FALSE;
   explicitExternal = FALSE;
   spec  = 0;
+  propSpec = 0;
   lang = SrcLangExt_Unknown;
   hidden = FALSE;
   artificial = FALSE;

@@ -420,6 +420,7 @@ class MemberDefImpl
     int initLines;            // number of lines in the initializer
 
     int  memSpec;             // The specifiers present for this member
+    int  propSpec;            // The UNO IDL property specifiers for this member
     MemberDef::MemberType mtype;         // returns the kind of member
     int maxInitLines;         // when the initializer will be displayed 
     int userInitLines;        // result of explicit \hideinitializer or \showinitializer
@@ -560,6 +561,7 @@ void MemberDefImpl::init(Definition *def,
   proto=FALSE;
   annScope=FALSE;
   memSpec=0;
+  propSpec=0;
   annMemb=0;
   annUsed=FALSE;
   annEnumType=0;
@@ -1611,23 +1613,34 @@ void MemberDef::writeDeclaration(OutputList &ol,
     ol.endTypewriter();
   }
 
-  if (isProperty() && (isSettable() || isGettable()))
+  if (isProperty())
   {
-      ol.writeLatexSpacing();
-      ol.startTypewriter();
-      ol.docify(" [");
       QStrList sl;
       if (isGettable())  sl.append("get");
       if (isSettable())  sl.append("set");
-      const char *s=sl.first();
-      while (s)
+      if (isAttribute()) sl.append("attribute");
+      if (isReadonly())  sl.append("readonly");
+      if (isOptional())  sl.append("optional");
+      if (isMaybevoid()) sl.append("maybevoid");
+      if (isOneway())    sl.append("oneway");
+      if (isUNOProperty()) sl.append("property");
+
+      if (!sl.isEmpty())
       {
-         ol.docify(s);
-         s=sl.next();
-         if (s) ol.docify(", ");
+          const char *s=sl.first();
+  
+          ol.writeLatexSpacing();
+          ol.startTypewriter();
+          ol.docify(" [");
+          while (s)
+          {
+              ol.docify(s);
+              s=sl.next();
+              if (s) ol.docify(", ");
+          }
+          ol.docify("]");
+          ol.endTypewriter();
       }
-      ol.docify("]");
-      ol.endTypewriter();
   }
 
   if (isEvent() && (isAddable() || isRemovable() || isRaisable()))
@@ -1796,7 +1809,8 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
        isFriend() || isRelated() || 
        (isInline() && Config_getBool("INLINE_INFO")) ||
        isSignal() || isSlot() ||
-       isStatic() || 
+       isStatic() || isAttribute() || isReadonly() ||
+       isMaybevoid() || isOneway() || isUNOProperty() ||
        (m_impl->classDef && m_impl->classDef!=container && container->definitionType()==TypeClass) ||
        (m_impl->memSpec & ~Entry::Inline)!=0 
       )
@@ -1837,6 +1851,11 @@ void MemberDef::_getLabels(QStrList &sl,Definition *container) const
         if      (isNew())                 sl.append("new");
         if      (isOptional())            sl.append("optional");
         if      (isRequired())            sl.append("required");
+        if      (isAttribute())           sl.append("attribute");
+        if      (isReadonly())            sl.append("readonly");
+        if      (isMaybevoid())           sl.append("maybevoid");
+        if      (isOneway())              sl.append("oneway");
+        if      (isUNOProperty())         sl.append("property");
 
         if      (isNonAtomic())           sl.append("nonatomic");
         else if (isObjCProperty())        sl.append("atomic");
@@ -3639,10 +3658,16 @@ int MemberDef::initializerLines() const
   return m_impl->initLines; 
 }
 
-int  MemberDef::getMemberSpecifiers() const
+int MemberDef::getMemberSpecifiers() const
 { 
   makeResident();
   return m_impl->memSpec; 
+}
+
+int MemberDef::getPropertySpecifiers() const
+{
+  makeResident();
+  return m_impl->propSpec;
 }
 
 ClassDef *MemberDef::getClassDef() const
@@ -3963,6 +3988,35 @@ bool MemberDef::isUnretained() const
   return (m_impl->memSpec&Entry::Unretained)!=0; 
 }
 
+bool MemberDef::isAttribute() const
+{
+  makeResident();
+  return (m_impl->propSpec&Entry::Attribute)!=0; 
+}
+
+bool MemberDef::isReadonly() const
+{
+  makeResident();
+  return (m_impl->propSpec&Entry::Readonly)!=0; 
+}
+
+bool MemberDef::isMaybevoid() const
+{
+  makeResident();
+  return (m_impl->propSpec&Entry::Maybevoid)!=0; 
+}
+
+bool MemberDef::isOneway() const
+{
+  makeResident();
+  return (m_impl->propSpec&Entry::Oneway)!=0; 
+}
+
+bool MemberDef::isUNOProperty() const
+{
+  makeResident();
+  return (m_impl->propSpec&Entry::UNOProperty)!=0; 
+}
 
 bool MemberDef::isImplementation() const
 { 
@@ -4198,10 +4252,22 @@ void MemberDef::setMemberSpecifiers(int s)
   m_impl->memSpec=s; 
 }
 
+void MemberDef::setPropertySpecifiers(int s)
+{
+  makeResident();
+  m_impl->propSpec=s;
+}
+
 void MemberDef::mergeMemberSpecifiers(int s)
 { 
   makeResident();
   m_impl->memSpec|=s; 
+}
+
+void MemberDef::mergePropertySpecifiers(int s)
+{
+  makeResident();
+  m_impl->propSpec|=s;
 }
 
 void MemberDef::setBitfields(const char *s)
@@ -4493,6 +4559,7 @@ void MemberDef::flushToDisk() const
   marshalQCString     (Doxygen::symbolStorage,m_impl->extraTypeChars);
   marshalInt          (Doxygen::symbolStorage,m_impl->initLines);
   marshalInt          (Doxygen::symbolStorage,m_impl->memSpec);
+  marshalInt          (Doxygen::symbolStorage,m_impl->propSpec);
   marshalInt          (Doxygen::symbolStorage,(int)m_impl->mtype);
   marshalInt          (Doxygen::symbolStorage,m_impl->maxInitLines);
   marshalInt          (Doxygen::symbolStorage,m_impl->userInitLines);
@@ -4594,6 +4661,7 @@ void MemberDef::loadFromDisk() const
   m_impl->extraTypeChars          = unmarshalQCString     (Doxygen::symbolStorage);
   m_impl->initLines               = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->memSpec                 = unmarshalInt          (Doxygen::symbolStorage);
+  m_impl->propSpec                = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->mtype                   = (MemberDef::MemberType)unmarshalInt          (Doxygen::symbolStorage);
   m_impl->maxInitLines            = unmarshalInt          (Doxygen::symbolStorage);
   m_impl->userInitLines           = unmarshalInt          (Doxygen::symbolStorage);
