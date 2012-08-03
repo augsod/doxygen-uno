@@ -2255,10 +2255,6 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 
                                             QCString name = yytext;
                                             name = name.mid(10).stripWhiteSpace();
-                                            if(name.find("::")==0)
-                                            {
-                                              name = name.mid(2);
-                                            }
 
                                             yyless(yyleng - name.length());
 					    BEGIN( CompoundName );
