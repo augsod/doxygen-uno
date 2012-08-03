@@ -468,6 +468,22 @@ static void addSTLClasses(EntryNav *rootNav)
 
 //----------------------------------------------------------------------------
 
+static bool isUNOServiceInterface(EntryNav* current)
+{
+  if(!current || !current->parent())
+    return false;
+
+  if(current->parent()->type().findRev("service") == -1 &&
+     current->parent()->type().findRev("interface") == -1)
+    return false;
+
+  if(current->type().findRev("service") == -1 &&
+     current->type().findRev("interface") == -1)
+    return false;
+
+  return true;
+}
+
 static Definition *findScopeFromQualifiedName(Definition *startScope,const QCString &n,
                                               FileDef *fileScope=0);
 
@@ -2136,9 +2152,7 @@ static MemberDef *addVariableToClass(
   QCString def;
   if (!root->type.isEmpty())
   {
-    if ((root->type.findRev("interface")!=-1 ||
-         root->type.findRev("service")!=-1) &&
-        rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
+    if (isUNOServiceInterface(rootNav))
     {
       // For interfaces in UNO IDL-style services
       def=root->type+" "+name;
@@ -2736,8 +2750,7 @@ static void addVariable(EntryNav *rootNav,int isFuncPtr=-1)
                              );
          }
       }
-      else if ((root->type.findRev("interface")!=-1 || root->type.findRev("service")!=-1) &&
-               rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
+      else if (isUNOServiceInterface(rootNav))
       {
         // For interfaces in UNO IDL-style services
         cd=getClass(scope);
@@ -2912,8 +2925,7 @@ static void buildVarList(EntryNav *rootNav)
   {
     addVariable(rootNav,isFuncPtr);
   }
-  else if ((rootNav->type().findRev("interface")!=-1 || rootNav->type().findRev("service")!=-1) &&
-           rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
+  else if (isUNOServiceInterface(rootNav))
   {
     // For interfaces in UNO IDL-style services
     addVariable(rootNav,isFuncPtr);
@@ -6585,8 +6597,7 @@ static void filterMemberDocumentation(EntryNav *rootNav)
     isFunc=FALSE;
   }
 
-  if ((root->type.findRev("interface")!=-1 || root->type.findRev("service")!=-1) &&
-      rootNav->parent() && rootNav->parent()->type().findRev("service")!=-1)
+  if (isUNOServiceInterface(rootNav))
   {
     // For UNO IDL-style interfaces
     findMember(rootNav,

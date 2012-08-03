@@ -1399,7 +1399,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					  {
   					    isTypedef=FALSE;
 
-                                            if(current_root && current_root->spec & Entry::Service)
+                                            if(current_root && (current_root->spec & Entry::Service ||
+                                                                current_root->spec & Entry::Interface))
                                             {
                                               current->section = Entry::VARIABLE_SEC;
                                               current->protection = protection = Public;
@@ -2226,7 +2227,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					    lineCount();
   					    isTypedef=FALSE;
 
-                                            if(current_root && current_root->spec & Entry::Service)
+                                            if(current_root && (current_root->spec & Entry::Service ||
+                                                                current_root->spec & Entry::Interface))
                                             {
                                               current->section = Entry::VARIABLE_SEC;
                                               current->protection = protection = Public;
@@ -2289,7 +2291,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 						current->name += yytext;
 			 		      current->stat = TRUE;
 					    }
-                                            else if (insideIDL && current_root && current_root->spec & Entry::Service)
+                                            else if (insideIDL && current_root && (current_root->spec & Entry::Service ||
+                                                                                   current_root->spec & Entry::Interface))
                                             {
                                               current->name = yytext;
                                             }
@@ -3169,7 +3172,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
 					      )
 					     ) // IDL function property
  					  {
-                                            if(current_root && current_root->spec & Entry::Service)
+                                            if(current_root && (current_root->spec & Entry::Service ||
+                                                                current_root->spec & Entry::Interface))
                                             {
                                               REJECT;
                                             }
@@ -4979,11 +4983,8 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                           if(ix > 0)
                                             current->name = current->name.left(ix);
 
-                                          current->name = current->name.stripWhiteSpace();
-                                          if(current->name.find("::")==0)
-                                            current->name = current->name.mid(2);
-
-                                          if(!(current_root && current_root->spec & Entry::Service))
+                                          if(!(current_root && (current_root->spec & Entry::Service ||
+                                                                current_root->spec & Entry::Interface)))
                                           {
 					    current->reset();
 					    initEntry();
