@@ -5712,6 +5712,12 @@ TYPEDEFPREFIX (("typedef"{BN}+)?)((("volatile"|"const"){BN}+)?)
                                               unput(*yytext); 
 					      BEGIN( Function );
 					    }
+                                            else if (insideIDL && current->propSpec & Entry::Attribute)
+                                            {
+                                              // Skip exception specifiers in UNO IDL attributes for now
+                                              needsSemi = TRUE;
+                                              BEGIN(SkipCurlyBlock);
+                                            }
 					    else
 					    {
 					      needsSemi = TRUE;
